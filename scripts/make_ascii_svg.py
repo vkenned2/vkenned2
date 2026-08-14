@@ -1,75 +1,65 @@
 #!/usr/bin/env python3
 """
-make_ascii_svg.py
-Converts prepped photo (source-prepped.png) into an animated SVG ASCII portrait.
-Uses ONLY inline SVG presentation attributes + native SMIL <animate> elements.
-No CSS classes — GitHub strips <style> blocks when serving SVGs via <img>.
+make_ascii_svg.py  —  Deep Navy × Sky Blue × Gold premium theme
+GitHub-safe: inline SVG attributes + SMIL <animate>, no CSS classes.
 Output: vishal-ascii.svg
 """
-
 import sys
 import os
 from PIL import Image
 
 RAMP = " .`:-=+*cs#%@"
 
-# Colors — all inline
-BG       = "#0d1117"
-BG2      = "#111722"
-TITLEBAR = "#161b22"
-BORDER   = "#30363d"
-TEXT     = "#c9d1d9"
-BRIGHT   = "#e6edf3"
-MUTED    = "#7d8590"
-GREEN    = "#39d353"
-CYAN     = "#22d3ee"
-RED      = "#ff5f56"
-YELLOW   = "#ffbd2e"
-BTNGRN   = "#27c93f"
+MONO  = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+BG1   = "#040d18"
+BG2   = "#0a1628"
+BAR   = "#060e1e"
+BDR   = "#1a3452"
+TEXT  = "#c0d4e8"
+BRIGHT= "#e8f4ff"
+MUTED = "#4a6a8a"
+BLUE  = "#38bdf8"
+CYAN  = "#22d3ee"
+GOLD  = "#f59e0b"
+RED   = "#ff5f56"
+YELL  = "#ffbd2e"
+GRND  = "#27c93f"
 
-MONO = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
 
-
-def generate_placeholder_ascii(cols=62, rows=26):
-    """Stylized ASCII placeholder when source-prepped.png is not available."""
+def placeholder_ascii(cols=62, rows=24):
     art = [
-        "     .----------------------------------------------.     ",
-        "    /   __________________________________________   \\    ",
-        "   |   |                                          |   |   ",
-        "   |   |   ___  ___  ___  ___  _  _  __   ___   |   |   ",
-        "   |   |  | \\/ || __||   || \\/ || |/ / | | \\  \\  |   |   ",
-        "   |   |  | || || |_ | _ ||    || |< <  | |  \\ \\ |   |   ",
-        "   |   |  |_||_||___||___||_/\\_||_|\\_\\ |_|  /_/ |   |   ",
-        "   |   |                                          |   |   ",
-        "   |   |   PhD Candidate @ Univ. of Tennessee    |   |   ",
-        "   |   |   Energy & Environmental Policy         |   |   ",
-        "   |   |   Knoxville, Tennessee                  |   |   ",
-        "   |   |__________________________________________|   |   ",
-        "    \\_________________________________________________/   ",
-        "                         |   |                            ",
-        "                      .----+----.                         ",
-        "                     / RESEARCHER \\                       ",
-        "                    / GIS | POLICY \\                      ",
-        "                   /  DATA | AI | ML \\                    ",
-        "                  '-------------------'                   ",
-        "           .-----------------------------------------.    ",
-        "          / Energy · Conservation · Evidence Policy  \\   ",
-        "         '-------------------------------------------'    ",
-        "                                                           ",
-        "          [ vkenned2 ] [ UTK Knoxville ] [ 2022-2027 ]    ",
-        "                                                           ",
-        "              Source photo not yet processed.             ",
+        "    .------------------------------------------------.   ",
+        "   /                                                  \\  ",
+        "  |   ____   ____  __  ____   _   _  __   __          | ",
+        "  |  |    \\ |    ||  ||    \\ | |_| ||  \\ /  |         | ",
+        "  |  |  |) || || ||  ||  |) ||  _  ||   v   |         | ",
+        "  |  |____/ |____||__||____/ |_| |_||_|   |_|         | ",
+        "  |                                                    | ",
+        "  |         PhD Candidate · Policy Analyst             | ",
+        "  |         University of Tennessee · Knoxville        | ",
+        "  |                                                    | ",
+        "  |  .------------------------------------------------.| ",
+        "  |  | Energy + Environmental Policy                   || ",
+        "  |  | Geospatial Analysis · Conservation · AI         || ",
+        "  |  | Python · R · JavaScript · SQL                   || ",
+        "  |  '------------------------------------------------'| ",
+        "  |                                                    | ",
+        "  |    [  Add source-photo.jpg to generate your        | ",
+        "  |       personalized ASCII portrait  ]               | ",
+        "  |                                                    | ",
+        "   \\                                                  /  ",
+        "    '------------------------------------------------'   ",
+        "                                                          ",
+        "         vkenned2 · github.com/vkenned2                  ",
+        "                                                          ",
     ]
-    pad_cols = cols
     lines = []
-    for line in art:
-        if len(line) < pad_cols:
-            line = line + " " * (pad_cols - len(line))
-        elif len(line) > pad_cols:
-            line = line[:pad_cols]
-        lines.append(line)
+    for ln in art:
+        if len(ln) < cols:
+            ln = ln + " " * (cols - len(ln))
+        lines.append(ln[:cols])
     while len(lines) < rows:
-        lines.append(" " * pad_cols)
+        lines.append(" " * cols)
     return lines[:rows]
 
 
@@ -79,158 +69,139 @@ def image_to_ascii(img_path: str, cols=68, rows=30):
     try:
         img = Image.open(img_path).convert("L")
     except Exception as e:
-        print(f"Error opening prepped photo: {e}", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
         return None
 
     img_w, img_h = img.size
-    # Monospace chars are ~0.55 as wide as tall → compensate aspect
-    aspect      = (img_h / img_w) * 0.52
-    target_h    = min(rows, int(cols * aspect))
+    target_h = min(rows, int(cols * (img_h / img_w) * 0.52))
+    img_r = img.resize((cols, target_h), Image.Resampling.LANCZOS)
+    px = list(img_r.getdata())
+    rlen = len(RAMP)
 
-    img_resized = img.resize((cols, target_h), Image.Resampling.LANCZOS)
-    pixels      = list(img_resized.getdata())
-    ramp_len    = len(RAMP)
-
-    ascii_lines = []
+    lines = []
     for r in range(target_h):
-        row_chars = []
+        row = []
         for c in range(cols):
-            val = pixels[r * cols + c]
-            if val > 230:
-                ch = " "
+            v = px[r * cols + c]
+            if v > 230:
+                row.append(" ")
             else:
-                idx = int((255 - val) / 255.0 * (ramp_len - 1))
-                ch = RAMP[max(0, min(idx, ramp_len - 1))]
-            row_chars.append(ch)
-        ascii_lines.append("".join(row_chars))
-
-    return ascii_lines
+                row.append(RAMP[max(0, min(int((255 - v) / 255.0 * (rlen - 1)), rlen - 1))])
+        lines.append("".join(row))
+    return lines
 
 
-def render_ascii_svg(ascii_lines: list, output_path: str):
-    W = 370
-    font_size   = 6.8
-    line_height = 8.2
-    x_start     = 14
-    y_start     = 50
+def render_ascii_svg(ascii_lines: list, out_path: str):
+    W           = 370
+    fs          = 6.8   # font-size
+    lh          = 8.2   # line-height
+    x0          = 14
+    y0          = 48
+    num_rows    = len(ascii_lines)
+    content_h   = y0 + num_rows * lh + 4
+    status_h    = 28
+    H           = max(320, int(content_h + status_h + 8))
+    status_y    = H - status_h - 4
+    prompt_y    = status_y + 19
 
-    num_rows = len(ascii_lines)
+    o = []
+    o.append(f'<svg xmlns="http://www.w3.org/2000/svg" '
+             f'viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
 
-    # Dynamic height: fit all rows + title bar + status bar
-    content_h = y_start + num_rows * line_height + 4
-    status_h  = 26
-    H = int(content_h + status_h + 8)
-    H = max(H, 320)
+    # Defs
+    o.append('<defs>')
+    o.append(f'  <linearGradient id="abg" x1="0%" y1="0%" x2="100%" y2="100%">')
+    o.append(f'    <stop offset="0%"   stop-color="{BG1}"/>')
+    o.append(f'    <stop offset="100%" stop-color="{BG2}"/>')
+    o.append(f'  </linearGradient>')
+    o.append(f'  <linearGradient id="aacc" x1="0%" y1="0%" x2="100%" y2="0%">')
+    o.append(f'    <stop offset="0%"   stop-color="#0369a1"/>')
+    o.append(f'    <stop offset="100%" stop-color="{CYAN}"/>')
+    o.append(f'  </linearGradient>')
+    o.append('</defs>')
 
-    status_y = H - status_h - 4
+    # Window
+    o.append(f'<rect width="{W}" height="{H}" rx="12" ry="12" '
+             f'fill="url(#abg)" stroke="{BDR}" stroke-width="1.5"/>')
 
-    out = []
+    # Title bar
+    o.append(f'<rect width="{W}" height="34" rx="12" ry="12" fill="{BAR}"/>')
+    o.append(f'<rect y="20" width="{W}" height="14" fill="{BAR}"/>')
+    o.append(f'<line x1="0" y1="34" x2="{W}" y2="34" stroke="{BDR}" stroke-width="1"/>')
 
-    # ── SVG root ──────────────────────────────────────────────────────────────
-    out.append(f'<svg xmlns="http://www.w3.org/2000/svg" '
-               f'viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
+    # Dots
+    o.append(f'<circle cx="18" cy="17" r="5" fill="{RED}"/>')
+    o.append(f'<circle cx="35" cy="17" r="5" fill="{YELL}"/>')
+    o.append(f'<circle cx="52" cy="17" r="5" fill="{GRND}"/>')
 
-    out.append('<defs>')
-    out.append(f'  <linearGradient id="abg" x1="0%" y1="0%" x2="100%" y2="100%">')
-    out.append(f'    <stop offset="0%"   stop-color="{BG}"/>')
-    out.append(f'    <stop offset="100%" stop-color="{BG2}"/>')
-    out.append(f'  </linearGradient>')
-    out.append('</defs>')
+    # Title text
+    o.append(f'<text y="22" font-family={MONO!r} font-size="11" font-weight="600">')
+    o.append(f'  <tspan x="68" fill="{BLUE}">vkenned2</tspan>'
+             f'<tspan fill="{MUTED}"> — </tspan>'
+             f'<tspan fill="{TEXT}">portrait.sh</tspan>')
+    o.append('</text>')
 
-    # ── Main window ───────────────────────────────────────────────────────────
-    out.append(f'<rect x="0" y="0" width="{W}" height="{H}" rx="10" ry="10" '
-               f'fill="url(#abg)" stroke="{BORDER}" stroke-width="1.5"/>')
+    # Accent strip
+    o.append(f'<rect x="0" y="34" width="{W}" height="3" fill="url(#aacc)"/>')
 
-    # ── Title bar ─────────────────────────────────────────────────────────────
-    out.append(f'<rect x="0" y="0" width="{W}" height="32" rx="10" ry="10" '
-               f'fill="{TITLEBAR}" stroke="{BORDER}" stroke-width="1"/>')
-    out.append(f'<rect x="0" y="20" width="{W}" height="12" fill="{TITLEBAR}"/>')
-    out.append(f'<line x1="0" y1="32" x2="{W}" y2="32" stroke="{BORDER}" stroke-width="1"/>')
-
-    # Window dots
-    out.append(f'<circle cx="16" cy="16" r="5.5" fill="{RED}"/>')
-    out.append(f'<circle cx="33" cy="16" r="5.5" fill="{YELLOW}"/>')
-    out.append(f'<circle cx="50" cy="16" r="5.5" fill="{BTNGRN}"/>')
-
-    # Title text — inline fills
-    out.append(f'<text y="21" font-family={MONO!r} font-size="11" font-weight="600">')
-    out.append(f'  <tspan x="67" fill="{GREEN}">vkenned2@github</tspan>'
-               f'<tspan fill="{TEXT}">:</tspan>'
-               f'<tspan fill="{CYAN}">~$</tspan>'
-               f'<tspan fill="{TEXT}"> ./portrait.sh</tspan>')
-    out.append('</text>')
-
-    # ── ASCII rows — inline fill, xml:space, SMIL animate ────────────────────
+    # ASCII rows — sky-blue tint
     for idx, line in enumerate(ascii_lines):
-        y     = y_start + idx * line_height
-        delay = round(0.04 + idx * 0.018, 3)
-        # Escape XML special chars
-        escaped = (line
-                   .replace("&", "&amp;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;"))
-        out.append(
-            f'<text x="{x_start}" y="{y:.1f}" '
+        y     = y0 + idx * lh
+        delay = round(0.04 + idx * 0.016, 3)
+        esc   = (line
+                 .replace("&", "&amp;")
+                 .replace("<", "&lt;")
+                 .replace(">", "&gt;"))
+        o.append(
+            f'<text x="{x0}" y="{y:.1f}" '
             f'xml:space="preserve" '
             f'font-family={MONO!r} '
-            f'font-size="{font_size}" '
-            f'fill="{GREEN}">'
+            f'font-size="{fs}" '
+            f'fill="{BLUE}">'
             f'<animate attributeName="opacity" from="0" to="1" '
-            f'dur="0.22s" begin="{delay}s" fill="freeze"/>'
-            f'{escaped}</text>'
+            f'dur="0.2s" begin="{delay}s" fill="freeze"/>'
+            f'{esc}</text>'
         )
 
-    # ── Status bar ────────────────────────────────────────────────────────────
-    out.append(f'<rect x="0" y="{status_y}" width="{W}" height="{H - status_y}" '
-               f'rx="0" fill="{TITLEBAR}" stroke="{BORDER}" stroke-width="1"/>')
-    # Round bottom corners
-    out.append(f'<rect x="0" y="{status_y}" width="{W}" height="4" fill="{TITLEBAR}"/>')
-    out.append(f'<rect x="0" y="{H - 10}" width="{W}" height="10" rx="6" fill="{TITLEBAR}"/>')
+    # Status bar
+    o.append(f'<rect x="0" y="{status_y}" width="{W}" height="{H - status_y}" '
+             f'fill="{BAR}" stroke="{BDR}" stroke-width="1"/>')
+    o.append(f'<rect x="0" y="{H - 10}" width="{W}" height="10" rx="6" fill="{BAR}"/>')
 
-    prompt_y = status_y + 17
-    out.append(f'<text y="{prompt_y}" font-family={MONO!r} font-size="11" font-weight="600">')
-    out.append(f'  <tspan x="12" fill="{GREEN}">vkenned2@github</tspan>'
-               f'<tspan fill="{TEXT}">:</tspan>'
-               f'<tspan fill="{CYAN}">~$</tspan>'
-               f'<tspan fill="{MUTED}"> whoami </tspan>'
-               f'<tspan fill="{BRIGHT}" font-weight="800">Vishal Kennedy</tspan>')
-    out.append('</text>')
+    # Status text
+    o.append(f'<text y="{prompt_y}" font-family={MONO!r} font-size="11" font-weight="600">')
+    o.append(f'  <tspan x="12" fill="{BLUE}">vkenned2</tspan>'
+             f'<tspan fill="{MUTED}"> — </tspan>'
+             f'<tspan fill="{TEXT}">whoami  </tspan>'
+             f'<tspan fill="{GOLD}" font-weight="800">Vishal Kennedy</tspan>')
+    o.append('</text>')
 
-    # Blinking cursor
-    cursor_x = 246
-    out.append(f'<rect x="{cursor_x}" y="{prompt_y - 11}" width="6" height="12" fill="{GREEN}">')
-    out.append('  <animate attributeName="opacity" values="1;0;1" '
-               'dur="1.1s" repeatCount="indefinite"/>')
-    out.append('</rect>')
+    # Cursor
+    cur_x = 224
+    o.append(f'<rect x="{cur_x}" y="{prompt_y - 11}" width="7" height="13" fill="{BLUE}">')
+    o.append('  <animate attributeName="opacity" values="1;0;1" '
+             'dur="1.1s" repeatCount="indefinite"/>')
+    o.append('</rect>')
 
-    out.append('</svg>')
-
-    svg = "\n".join(out)
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(svg)
-    print(f"Generated ASCII portrait SVG: {output_path} ({len(ascii_lines)} rows, height={H})")
+    o.append('</svg>')
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(o))
+    print(f"Generated ASCII portrait → {out_path}  ({num_rows} rows, H={H})")
 
 
 def main():
-    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+    base    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     prepped = os.path.join(base, "source-prepped.png")
-    output  = os.path.join(base, "vishal-ascii.svg")
+    out     = os.path.join(base, "vishal-ascii.svg")
+    if len(sys.argv) > 1: prepped = sys.argv[1]
+    if len(sys.argv) > 2: out     = sys.argv[2]
 
-    if len(sys.argv) > 1:
-        prepped = sys.argv[1]
-    if len(sys.argv) > 2:
-        output  = sys.argv[2]
+    lines = image_to_ascii(prepped, cols=68, rows=30)
+    if not lines:
+        print(f"source-prepped.png not found — using placeholder", file=sys.stderr)
+        lines = placeholder_ascii(cols=62, rows=24)
 
-    ascii_lines = image_to_ascii(prepped, cols=68, rows=30)
-
-    if not ascii_lines:
-        print(f"Note: {prepped} not found — generating stylized placeholder...",
-              file=sys.stderr)
-        ascii_lines = generate_placeholder_ascii(cols=62, rows=26)
-
-    render_ascii_svg(ascii_lines, output)
-
+    render_ascii_svg(lines, out)
 
 if __name__ == "__main__":
     main()
