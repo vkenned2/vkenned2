@@ -1,0 +1,41 @@
+name: Refresh profile contributions
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      GH_PROFILE_USER: vkenned2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements-ci.txt
+
+      - name: Fetch contributions
+        run: python scripts/fetch_contributions.py
+
+      - name: Render heatmap SVG
+        run: python scripts/render_heatmap_svg.py
+
+      - name: Commit refreshed graph
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/contributions.json contrib-heatmap.svg
+          git diff --cached --quiet || git commit -m "chore: refresh profile contributions [skip ci]"
+          git push
