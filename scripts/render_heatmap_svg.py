@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 render_heatmap_svg.py
-Reads data/contributions.json and generates an animated GitHub dark terminal SVG heatmap.
+Reads data/contributions.json and generates a GitHub-compatible animated heatmap SVG.
+Uses ONLY inline SVG presentation attributes + native SMIL <animate> elements.
+No CSS classes — GitHub strips <style> blocks when serving SVGs via <img>.
 Output: contrib-heatmap.svg
 """
 
@@ -10,286 +12,232 @@ import os
 import sys
 from datetime import datetime, date, timedelta
 
+# Green contribution palette
 PALETTE = [
-    "#161b22",  # 0: background / no contrib
-    "#0e4429",  # 1: light green
-    "#006d32",  # 2: medium green
-    "#26a641",  # 3: bright green
-    "#39d353",  # 4: vivid green
-    "#69f0a0"   # 5: highlight green for peak days
+    "#161b22",  # 0: no contribution
+    "#0e4429",  # 1
+    "#006d32",  # 2
+    "#26a641",  # 3
+    "#39d353",  # 4
+    "#69f0a0",  # 5: peak
 ]
 
-MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-DAY_NAMES = ["", "Mon", "", "Wed", "", "Fri", ""]
+MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+DAY_LABELS  = ["", "Mon", "", "Wed", "", "Fri", ""]
 
-def get_color_for_count(count: int, level: int = None) -> str:
+# Colors
+BG       = "#0d1117"
+BG2      = "#111722"
+TITLEBAR = "#161b22"
+BORDER   = "#30363d"
+TEXT     = "#c9d1d9"
+BRIGHT   = "#e6edf3"
+MUTED    = "#7d8590"
+GREEN    = "#39d353"
+CYAN     = "#22d3ee"
+RED      = "#ff5f56"
+YELLOW   = "#ffbd2e"
+BTNGRN   = "#27c93f"
+MONO     = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+SANS     = "'-apple-system', 'BlinkMacSystemFont', 'Segoe UI', Helvetica, Arial, sans-serif"
+
+
+def get_color(count: int, level: int) -> str:
     if level is not None and 0 <= level <= 4:
         if count > 15:
             return PALETTE[5]
         return PALETTE[level]
-    if count == 0:
-        return PALETTE[0]
-    elif count <= 2:
-        return PALETTE[1]
-    elif count <= 5:
-        return PALETTE[2]
-    elif count <= 9:
-        return PALETTE[3]
-    elif count <= 15:
-        return PALETTE[4]
-    else:
-        return PALETTE[5]
+    if count == 0:   return PALETTE[0]
+    if count <= 2:   return PALETTE[1]
+    if count <= 5:   return PALETTE[2]
+    if count <= 9:   return PALETTE[3]
+    if count <= 15:  return PALETTE[4]
+    return PALETTE[5]
+
 
 def render_svg(data: dict) -> str:
-    username = data.get("username", "vkenned2")
-    total_contribs = data.get("total_contributions", 0)
-    current_streak = data.get("current_streak", {}).get("length", 0)
-    longest_streak = data.get("longest_streak", {}).get("length", 0)
-    best_day_count = data.get("best_day", {}).get("count", 0)
-    best_day_date = data.get("best_day", {}).get("date", "N/A")
-    range_start = data.get("range", {}).get("start", "")
-    range_end = data.get("range", {}).get("end", "")
+    username   = data.get("username", "vkenned2")
+    total      = data.get("total_contributions", 0)
+    cur_streak = data.get("current_streak", {}).get("length", 0)
+    lon_streak = data.get("longest_streak", {}).get("length", 0)
+    best_count = data.get("best_day", {}).get("count", 0)
+    best_date  = data.get("best_day", {}).get("date", "N/A")
+    r_start    = data.get("range", {}).get("start", "")
+    r_end      = data.get("range", {}).get("end", "")
 
-    days = data.get("days", [])
-    if not days:
-        print("No days data found in JSON", file=sys.stderr)
+    days     = data.get("days", [])
+    day_map  = {d["date"]: d for d in days}
 
-    # Map dates to counts & levels
-    day_map = {d["date"]: d for d in days}
-
-    # Generate full 53-week grid ending at range_end or today
-    if days:
-        end_d = datetime.strptime(range_end, "%Y-%m-%d").date()
-    else:
-        end_d = date.today()
-
-    # Find ending Saturday of the last week
-    # weekday(): Mon=0, Tue=1, ..., Sat=5, Sun=6
-    # We want Sunday as row 0 and Saturday as row 6.
-    # In python: (dt.weekday() + 1) % 7 gives Sunday=0, Mon=1, ..., Sat=6.
-    day_of_week_end = (end_d.weekday() + 1) % 7
-    saturday_end = end_d + timedelta(days=(6 - day_of_week_end))
+    # Determine grid boundaries (53 weeks ending at latest Saturday)
+    end_d        = datetime.strptime(r_end, "%Y-%m-%d").date() if r_end else date.today()
+    dow_end      = (end_d.weekday() + 1) % 7   # Sun=0 … Sat=6
+    saturday_end = end_d + timedelta(days=(6 - dow_end))
     sunday_start = saturday_end - timedelta(days=(53 * 7 - 1))
 
-    # Build weeks array [53 weeks][7 days]
-    weeks = []
-    month_labels = [] # list of (week_idx, month_name)
-
-    current_d = sunday_start
-    prev_month = None
+    # Build weeks[53][7]
+    weeks        = []
+    month_labels = []  # (week_idx, month_name)
+    prev_month   = None
+    cur          = sunday_start
 
     for w in range(53):
-        week_days = []
+        week = []
         for d in range(7):
-            d_str = current_d.isoformat()
-            d_month = current_d.month
-            
-            # Place month label on first day of a new month (or first week)
-            if d_month != prev_month:
+            d_str  = cur.isoformat()
+            d_mon  = cur.month
+            if d_mon != prev_month:
                 if d == 0 or not month_labels or month_labels[-1][0] < w - 1:
-                    month_labels.append((w, MONTH_NAMES[d_month - 1]))
-                prev_month = d_month
-
-            d_info = day_map.get(d_str, {"date": d_str, "count": 0, "level": 0})
-            is_future = current_d > end_d
-            week_days.append({
-                "date": d_str,
-                "count": d_info.get("count", 0),
-                "level": d_info.get("level", 0),
-                "is_future": is_future
+                    month_labels.append((w, MONTH_NAMES[d_mon - 1]))
+                prev_month = d_mon
+            info = day_map.get(d_str, {"date": d_str, "count": 0, "level": 0})
+            week.append({
+                "date":      d_str,
+                "count":     info.get("count", 0),
+                "level":     info.get("level", 0),
+                "is_future": cur > end_d,
             })
-            current_d += timedelta(days=1)
-        weeks.append(week_days)
+            cur += timedelta(days=1)
+        weeks.append(week)
 
-    # SVG layout specs
-    width = 860
-    height = 295
-    cell_size = 11
-    cell_gap = 3
-    cell_step = cell_size + cell_gap # 14px
+    # Layout constants
+    W = 860
+    cell  = 11
+    gap   = 3
+    step  = cell + gap   # 14
+    gx    = 54           # grid x origin
+    gy    = 84           # grid y origin
 
-    grid_x_offset = 55
-    grid_y_offset = 88
+    # Dynamic height
+    grid_h  = 7 * step   # 98px
+    stats_y = gy + grid_h + 26
+    H       = stats_y + 36
 
-    # Format header stats
-    total_str = f"{total_contribs:,}"
-    best_str = f"{best_day_count} on {best_day_date}" if best_day_count > 0 else "0"
+    total_str = f"{total:,}"
+    best_str  = f"{best_count} on {best_date}" if best_count else "0"
 
-    # SVG markup assembly
-    svg_parts = []
-    svg_parts.append(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}">
-  <defs>
-    <linearGradient id="termBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0d1117" />
-      <stop offset="100%" stop-color="#111722" />
-    </linearGradient>
-    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5" />
-    </filter>
-  </defs>
+    out = []
 
-  <style>
-    .window {{
-      fill: url(#termBg);
-      stroke: #30363d;
-      stroke-width: 1px;
-      rx: 10px;
-      ry: 10px;
-    }}
-    .title-bar {{
-      fill: #161b22;
-      stroke: #30363d;
-      stroke-width: 1px;
-    }}
-    .title-text {{
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 13px;
-      font-weight: 600;
-      fill: #c9d1d9;
-    }}
-    .prompt-user {{ fill: #39d353; }}
-    .prompt-path {{ fill: #22d3ee; }}
-    .axis-text {{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      font-size: 10px;
-      fill: #7d8590;
-    }}
-    .stat-label {{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      font-size: 11px;
-      fill: #7d8590;
-    }}
-    .stat-val {{
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 12px;
-      font-weight: 600;
-      fill: #e6edf3;
-    }}
-    .stat-accent {{
-      fill: #39d353;
-    }}
-    .cell {{
-      rx: 2.5px;
-      ry: 2.5px;
-      opacity: 0;
-      animation: revealCell 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      transform-origin: center;
-    }}
-    @keyframes revealCell {{
-      0% {{
-        opacity: 0;
-        transform: scale(0.4);
-      }}
-      100% {{
-        opacity: 1;
-        transform: scale(1);
-      }}
-    }}
-    @media (prefers-reduced-motion: reduce) {{
-      .cell {{
-        opacity: 1 !important;
-        animation: none !important;
-      }}
-    }}
-  </style>
+    # ── SVG root ──────────────────────────────────────────────────────────────
+    out.append(f'<svg xmlns="http://www.w3.org/2000/svg" '
+               f'viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
 
-  <!-- Terminal Container Window -->
-  <rect x="2" y="2" width="{width - 4}" height="{height - 4}" class="window" filter="url(#shadow)" />
+    out.append('<defs>')
+    out.append(f'  <linearGradient id="hbg" x1="0%" y1="0%" x2="100%" y2="100%">')
+    out.append(f'    <stop offset="0%"   stop-color="{BG}"/>')
+    out.append(f'    <stop offset="100%" stop-color="{BG2}"/>')
+    out.append(f'  </linearGradient>')
+    out.append('</defs>')
 
-  <!-- Title Bar -->
-  <path d="M 2 12 Q 2 2 12 2 L {width - 12} 2 Q {width - 2} 2 {width - 2} 12 L {width - 2} 36 L 2 36 Z" class="title-bar" />
+    # ── Main window ───────────────────────────────────────────────────────────
+    out.append(f'<rect x="0" y="0" width="{W}" height="{H}" rx="10" ry="10" '
+               f'fill="url(#hbg)" stroke="{BORDER}" stroke-width="1.5"/>')
 
-  <!-- Window Control Buttons -->
-  <circle cx="20" cy="19" r="6" fill="#ff5f56" />
-  <circle cx="40" cy="19" r="6" fill="#ffbd2e" />
-  <circle cx="60" cy="19" r="6" fill="#27c93f" />
+    # ── Title bar ─────────────────────────────────────────────────────────────
+    out.append(f'<rect x="0" y="0" width="{W}" height="34" rx="10" ry="10" '
+               f'fill="{TITLEBAR}" stroke="{BORDER}" stroke-width="1"/>')
+    out.append(f'<rect x="0" y="20" width="{W}" height="14" fill="{TITLEBAR}"/>')
+    out.append(f'<line x1="0" y1="34" x2="{W}" y2="34" stroke="{BORDER}" stroke-width="1"/>')
 
-  <!-- Window Title -->
-  <text x="82" y="23" class="title-text">
-    <tspan class="prompt-user">vkenned2@github</tspan>:<tspan class="prompt-path">~$</tspan> ./contributions.sh
-  </text>
+    out.append(f'<circle cx="18" cy="17" r="5.5" fill="{RED}"/>')
+    out.append(f'<circle cx="36" cy="17" r="5.5" fill="{YELLOW}"/>')
+    out.append(f'<circle cx="54" cy="17" r="5.5" fill="{BTNGRN}"/>')
 
-  <!-- Summary Line inside Terminal -->
-  <text x="{grid_x_offset}" y="62" class="title-text" font-size="12px">
-    <tspan font-weight="bold" fill="#39d353">{total_str}</tspan> contributions in the last year <tspan fill="#7d8590">({range_start} → {range_end})</tspan>
-  </text>
+    out.append(f'<text y="22" font-family={MONO!r} font-size="13" font-weight="600">')
+    out.append(f'  <tspan x="74" fill="{GREEN}">vkenned2@github</tspan>'
+               f'<tspan fill="{TEXT}">:</tspan>'
+               f'<tspan fill="{CYAN}">~$</tspan>'
+               f'<tspan fill="{TEXT}"> ./contributions.sh</tspan>')
+    out.append('</text>')
 
-  <!-- Month Labels -->''')
+    # ── Summary line ──────────────────────────────────────────────────────────
+    out.append(f'<text x="{gx}" y="60" font-family={MONO!r} font-size="12" font-weight="600">')
+    out.append(f'  <tspan fill="{GREEN}" font-size="13">{total_str}</tspan>'
+               f'<tspan fill="{TEXT}"> contributions in the last year</tspan>'
+               f'<tspan fill="{MUTED}" font-size="10">  ({r_start} &#x2192; {r_end})</tspan>')
+    out.append('</text>')
 
-    for week_idx, m_name in month_labels:
-        mx = grid_x_offset + week_idx * cell_step
-        svg_parts.append(f'  <text x="{mx}" y="{grid_y_offset - 10}" class="axis-text">{m_name}</text>')
+    # ── Month labels ──────────────────────────────────────────────────────────
+    for w_idx, m_name in month_labels:
+        mx = gx + w_idx * step
+        out.append(f'<text x="{mx}" y="{gy - 6}" '
+                   f'font-family={SANS!r} font-size="10" fill="{MUTED}">{m_name}</text>')
 
-    svg_parts.append('\n  <!-- Day Labels -->')
-    for d_idx, d_name in enumerate(DAY_NAMES):
+    # ── Day-of-week labels ────────────────────────────────────────────────────
+    for d_idx, d_name in enumerate(DAY_LABELS):
         if d_name:
-            dy = grid_y_offset + d_idx * cell_step + 9
-            svg_parts.append(f'  <text x="{grid_x_offset - 12}" y="{dy}" class="axis-text" text-anchor="end">{d_name}</text>')
+            dy = gy + d_idx * step + 9
+            out.append(f'<text x="{gx - 8}" y="{dy}" '
+                       f'font-family={SANS!r} font-size="10" fill="{MUTED}" '
+                       f'text-anchor="end">{d_name}</text>')
 
-    svg_parts.append('\n  <!-- Heatmap Cells -->')
-
+    # ── Heatmap cells — inline fill + rx/ry + SMIL animate ───────────────────
     for w_idx, week in enumerate(weeks):
         for d_idx, day in enumerate(week):
             if day["is_future"]:
                 continue
-            cx = grid_x_offset + w_idx * cell_step
-            cy = grid_y_offset + d_idx * cell_step
-            color = get_color_for_count(day["count"], day["level"])
-            delay = round(w_idx * 0.008 + d_idx * 0.004, 3)
+            cx    = gx + w_idx * step
+            cy    = gy + d_idx * step
+            color = get_color(day["count"], day["level"])
+            delay = round(w_idx * 0.007 + d_idx * 0.003, 3)
 
-            title_str = f"{day['count']} contributions on {day['date']}"
-            svg_parts.append(f'  <rect x="{cx}" y="{cy}" width="{cell_size}" height="{cell_size}" fill="{color}" class="cell" style="animation-delay: {delay}s;"><title>{title_str}</title></rect>')
+            out.append(
+                f'<rect x="{cx}" y="{cy}" width="{cell}" height="{cell}" '
+                f'rx="2.5" ry="2.5" fill="{color}">'
+                f'<title>{day["count"]} contributions on {day["date"]}</title>'
+                f'<animate attributeName="opacity" from="0" to="1" '
+                f'dur="0.3s" begin="{delay}s" fill="freeze"/>'
+                f'</rect>'
+            )
 
-    # Footer section: Stats & Legend
-    footer_y = grid_y_offset + 7 * cell_step + 30 # y ~ 216
+    # ── Divider ───────────────────────────────────────────────────────────────
+    out.append(f'<line x1="24" y1="{stats_y - 12}" x2="{W - 24}" y2="{stats_y - 12}" '
+               f'stroke="{BORDER}" stroke-width="1" stroke-dasharray="4,4"/>')
 
-    svg_parts.append(f'''
-  <!-- Divider Line -->
-  <line x1="25" y1="{footer_y - 12}" x2="{width - 25}" y2="{footer_y - 12}" stroke="#30363d" stroke-width="1" stroke-dasharray="4,4" />
+    # ── Stats row ─────────────────────────────────────────────────────────────
+    out.append(f'<text x="{gx}" y="{stats_y}" font-family={SANS!r} font-size="11" fill="{MUTED}">')
+    out.append(
+        f'  current streak: <tspan font-family={MONO!r} fill="{GREEN}" font-weight="700">{cur_streak} days</tspan>'
+        f'<tspan fill="{BORDER}" font-size="13">  |  </tspan>'
+        f'longest streak: <tspan font-family={MONO!r} fill="{TEXT}" font-weight="700">{lon_streak} days</tspan>'
+        f'<tspan fill="{BORDER}" font-size="13">  |  </tspan>'
+        f'best day: <tspan font-family={MONO!r} fill="{TEXT}" font-weight="700">{best_str}</tspan>'
+    )
+    out.append('</text>')
 
-  <!-- Footer Stats -->
-  <g transform="translate({grid_x_offset}, {footer_y})">
-    <text y="0" class="stat-label">
-      current streak: <tspan class="stat-val stat-accent">{current_streak} days</tspan>
-      <tspan fill="#30363d" font-weight="bold">  │  </tspan>
-      longest streak: <tspan class="stat-val">{longest_streak} days</tspan>
-      <tspan fill="#30363d" font-weight="bold">  │  </tspan>
-      best day: <tspan class="stat-val">{best_str}</tspan>
-    </text>
-  </g>
+    # ── Legend ────────────────────────────────────────────────────────────────
+    leg_x = W - 196
+    leg_y = stats_y - 10
+    out.append(f'<text x="{leg_x}" y="{leg_y + 9}" font-family={SANS!r} font-size="10" fill="{MUTED}">Less</text>')
+    for i, c in enumerate(PALETTE):
+        bx = leg_x + 30 + i * 14
+        out.append(f'<rect x="{bx}" y="{leg_y}" width="10" height="10" rx="2" '
+                   f'fill="{c}" stroke="{BORDER}" stroke-width="0.5"/>')
+    out.append(f'<text x="{leg_x + 30 + 6*14}" y="{leg_y + 9}" '
+               f'font-family={SANS!r} font-size="10" fill="{MUTED}">More</text>')
 
-  <!-- Legend -->
-  <g transform="translate({width - 200}, {footer_y - 8})">
-    <text x="0" y="9" class="axis-text">Less</text>
-    <rect x="30" y="0" width="10" height="10" rx="2" fill="{PALETTE[0]}" stroke="#30363d" stroke-width="0.5" />
-    <rect x="44" y="0" width="10" height="10" rx="2" fill="{PALETTE[1]}" />
-    <rect x="58" y="0" width="10" height="10" rx="2" fill="{PALETTE[2]}" />
-    <rect x="72" y="0" width="10" height="10" rx="2" fill="{PALETTE[3]}" />
-    <rect x="86" y="0" width="10" height="10" rx="2" fill="{PALETTE[4]}" />
-    <rect x="100" y="0" width="10" height="10" rx="2" fill="{PALETTE[5]}" />
-    <text x="116" y="9" class="axis-text">More</text>
-  </g>
-</svg>''')
+    out.append('</svg>')
+    return "\n".join(out)
 
-    return "\n".join(svg_parts)
 
 def main():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    json_path = os.path.join(base_dir, "data", "contributions.json")
-    output_svg = os.path.join(base_dir, "contrib-heatmap.svg")
+    base      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    json_path = os.path.join(base, "data", "contributions.json")
+    out_path  = os.path.join(base, "contrib-heatmap.svg")
 
     if not os.path.exists(json_path):
-        print(f"Error: {json_path} does not exist. Run fetch_contributions.py first.", file=sys.stderr)
+        print(f"Error: {json_path} not found. Run fetch_contributions.py first.",
+              file=sys.stderr)
         sys.exit(1)
 
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    svg_content = render_svg(data)
-    with open(output_svg, "w", encoding="utf-8") as f:
-        f.write(svg_content)
+    svg = render_svg(data)
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(svg)
+    print(f"Generated heatmap SVG: {out_path}")
 
-    print(f"Successfully generated heatmap SVG at {output_svg}")
 
 if __name__ == "__main__":
     main()

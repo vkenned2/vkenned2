@@ -1,187 +1,71 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 360" width="490" height="360">
-  <defs>
-    <linearGradient id="infoBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0d1117" />
-      <stop offset="100%" stop-color="#111722" />
-    </linearGradient>
-    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5" />
-    </filter>
-  </defs>
-
-  <style>
-    .window {
-      fill: url(#infoBg);
-      stroke: #30363d;
-      stroke-width: 1px;
-      rx: 10px;
-      ry: 10px;
-    }
-    .title-bar {
-      fill: #161b22;
-      stroke: #30363d;
-      stroke-width: 1px;
-    }
-    .title-text {
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 12px;
-      font-weight: 600;
-      fill: #c9d1d9;
-    }
-    .prompt-user { fill: #39d353; }
-    .prompt-path { fill: #22d3ee; }
-    .name-title {
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 20px;
-      font-weight: 800;
-      fill: #e6edf3;
-      letter-spacing: 1px;
-    }
-    .label {
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 11.5px;
-      font-weight: 700;
-      fill: #22d3ee;
-    }
-    .value {
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 11.5px;
-      fill: #c9d1d9;
-    }
-    .separator {
-      stroke: #30363d;
-      stroke-width: 1px;
-    }
-    .cursor {
-      fill: #39d353;
-      animation: blink 1s step-end infinite;
-    }
-    .anim-line {
-      opacity: 0;
-      animation: fadeInLine 0.4s ease-out forwards;
-    }
-    @keyframes fadeInLine {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .anim-line {
-        opacity: 1 !important;
-        animation: none !important;
-      }
-      .cursor {
-        animation: none !important;
-        opacity: 1 !important;
-      }
-    }
-  </style>
-
-  <!-- Terminal Window -->
-  <rect x="2" y="2" width="486" height="356" class="window" filter="url(#cardShadow)" />
-
-  <!-- Title Bar -->
-  <path d="M 2 12 Q 2 2 12 2 L 478 2 Q 488 2 488 12 L 488 34 L 2 34 Z" class="title-bar" />
-
-  <!-- Window Controls -->
-  <circle cx="18" cy="18" r="5.5" fill="#ff5f56" />
-  <circle cx="36" cy="18" r="5.5" fill="#ffbd2e" />
-  <circle cx="54" cy="18" r="5.5" fill="#27c93f" />
-
-  <!-- Window Title -->
-  <text x="74" y="22" class="title-text">
-    <tspan class="prompt-user">vkenned2@github</tspan>:<tspan class="prompt-path">~$</tspan> neofetch
-  </text>
-
-  <!-- Header Identity -->
-  <g class="anim-line" style="animation-delay: 0.05s;">
-    <text x="24" y="62" class="name-title">VISHAL KENNEDY</text>
-  </g>
-
-  <!-- Separator Line -->
-  <line x1="24" y1="74" x2="466" y2="74" class="separator anim-line" style="animation-delay: 0.1s;" />
-
-  <!-- Neofetch Details Grid -->
-  <g class="anim-line" style="animation-delay: 0.15s;">
-    <text x="24" y="96">
-      <tspan class="label">Role      </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">PhD Candidate | Policy Analyst</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.2s;">
-    <text x="24" y="120">
-      <tspan class="label">Research  </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">Energy + Environmental Policy</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.25s;">
-    <text x="24" y="144">
-      <tspan class="label">Focus     </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">Geospatial | Conservation | AI</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.3s;">
-    <text x="24" y="168">
-      <tspan class="label">Stack     </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">Python | R | JavaScript | SQL</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.35s;">
-    <text x="24" y="192">
-      <tspan class="label">Methods   </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">Spatial Analysis | Program Evaluation</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.4s;">
-    <text x="24" y="216">
-      <tspan class="label">Building  </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">Evidence-to-decision systems</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.45s;">
-    <text x="24" y="240">
-      <tspan class="label">Location  </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">Knoxville, Tennessee</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.5s;">
-    <text x="24" y="264">
-      <tspan class="label">Education </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">University of Tennessee, Knoxville</tspan>
-    </text>
-  </g>
-  <g class="anim-line" style="animation-delay: 0.55s;">
-    <text x="24" y="288">
-      <tspan class="label">Field     </tspan>
-      <tspan fill="#7d8590">› </tspan>
-      <tspan class="value">Ecology + Energy & Environmental Policy</tspan>
-    </text>
-  </g>
-
-  <!-- Bottom Command Prompt & Blinking Cursor -->
-  <g class="anim-line" style="animation-delay: 0.6s;">
-    <line x1="24" y1="310" x2="466" y2="310" class="separator" />
-    <text x="24" y="330" class="title-text" font-size="11.5px">
-      <tspan class="prompt-user">vkenned2@github</tspan>:<tspan class="prompt-path">~$</tspan> 
-      <tspan fill="#7d8590">ready_</tspan>
-    </text>
-    <rect x="180" y="320" width="7" height="13" class="cursor" />
-  </g>
+<defs>
+  <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%"   stop-color="#0d1117"/>
+    <stop offset="100%" stop-color="#111722"/>
+  </linearGradient>
+</defs>
+<rect x="0" y="0" width="490" height="360" rx="10" ry="10" fill="url(#bg)" stroke="#30363d" stroke-width="1.5"/>
+<rect x="0" y="0" width="490" height="34" rx="10" ry="10" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+<rect x="0" y="20" width="490" height="14" fill="#161b22"/>
+<line x1="0" y1="34" x2="490" y2="34" stroke="#30363d" stroke-width="1"/>
+<circle cx="18" cy="17" r="5.5" fill="#ff5f56"/>
+<circle cx="36" cy="17" r="5.5" fill="#ffbd2e"/>
+<circle cx="54" cy="17" r="5.5" fill="#27c93f"/>
+<text y="22" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="12" font-weight="600">
+  <tspan x="74" fill="#39d353">vkenned2@github</tspan><tspan fill="#c9d1d9">:</tspan><tspan fill="#22d3ee">~$</tspan><tspan fill="#c9d1d9"> neofetch</tspan>
+</text>
+<text x="24" y="62" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="20" font-weight="800" fill="#e6edf3" letter-spacing="1">
+  <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.1s" fill="freeze"/>
+  VISHAL KENNEDY
+</text>
+<line x1="24" y1="72" x2="466" y2="72" stroke="#30363d" stroke-width="1">
+  <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="0.2s" fill="freeze"/>
+</line>
+<text y="96" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.25s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Role      </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">PhD Candidate | Policy Analyst</tspan>
+</text>
+<text y="120" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.33s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Research  </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Energy + Environmental Policy</tspan>
+</text>
+<text y="144" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.41s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Focus     </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Geospatial | Conservation | AI</tspan>
+</text>
+<text y="168" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.49s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Stack     </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Python · R · JavaScript · SQL</tspan>
+</text>
+<text y="192" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.57s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Methods   </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Spatial Analysis | Causal Inference</tspan>
+</text>
+<text y="216" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.65s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Building  </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Evidence-to-decision systems</tspan>
+</text>
+<text y="240" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.73s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Location  </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Knoxville, Tennessee</tspan>
+</text>
+<text y="264" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.81s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Education </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Univ. of Tennessee, Knoxville</tspan>
+</text>
+<text y="288" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.35s" begin="0.89s" fill="freeze"/>
+  <tspan x="24" font-weight="700" fill="#22d3ee">Field     </tspan><tspan fill="#7d8590">&#x25B8; </tspan><tspan fill="#c9d1d9">Ecology + Energy/Env Policy</tspan>
+</text>
+<line x1="24" y1="316" x2="466" y2="316" stroke="#30363d" stroke-width="1">
+  <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="1.1s" fill="freeze"/>
+</line>
+<text y="334" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="11.5">
+  <animate attributeName="opacity" from="0" to="1" dur="0.3s" begin="1.15s" fill="freeze"/>
+  <tspan x="24" fill="#39d353">vkenned2@github</tspan><tspan fill="#c9d1d9">:</tspan><tspan fill="#22d3ee">~$</tspan><tspan fill="#7d8590"> ready</tspan>
+</text>
+<rect x="181" y="325" width="7" height="13" fill="#39d353">
+  <animate attributeName="opacity" values="1;1;0;1" dur="1.2s" begin="1.2s" repeatCount="indefinite"/>
+</rect>
 </svg>
