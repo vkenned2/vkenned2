@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 make_ascii_svg.py
-Converts prepped photo (source-prepped.png) or a stylized fallback placeholder into an animated SVG ASCII portrait.
+Converts prepped photo (source-prepped.png) into an animated SVG ASCII portrait.
+Uses ONLY inline SVG presentation attributes + native SMIL <animate> elements.
+No CSS classes — GitHub strips <style> blocks when serving SVGs via <img>.
 Output: vishal-ascii.svg
 """
 
@@ -11,249 +13,224 @@ from PIL import Image
 
 RAMP = " .`:-=+*cs#%@"
 
-def generate_placeholder_ascii(cols=60, rows=34):
-    """
-    Generates a stylized, high-quality ASCII terminal avatar placeholder for Vishal Kennedy
-    when source-photo.jpg is not yet provided.
-    """
-    lines = []
-    
-    avatar_art = [
-        "       .-------------------------------------------.       ",
-        "      /   _______________________________________   \\      ",
-        "     |   |                                       |   |     ",
-        "     |   |    _____   _____     __  __ _  ___    |   |     ",
-        "     |   |   /  _  \\ /  _  \\   |  |/  | |/   |   |   |     ",
-        "     |   |   | |_| | | |_| |   |  '  /| ' /| |   |   |     ",
-        "     |   |   |  _  | |  _  |   |    < |  < | |   |   |     ",
-        "     |   |   |_| |_| |_| |_|   |__|\\_\\|__|\\|_|   |   |     ",
-        "     |   |                                       |   |     ",
-        "     |   |        [ VISHAL KENNEDY PROFILE ]     |   |     ",
-        "     |   |_______________________________________|   |     ",
-        "      \\_____________________________________________/      ",
-        "                           |   |                           ",
-        "                        .--;---;--.                        ",
-        "                       /  [ONLINE] \\                       ",
-        "                      /  UTK ECOLOGY\\                      ",
-        "                     /  POLICY+DATA  \\                     ",
-        "                    '-----------------'                    ",
-        "             .---------------------------------.           ",
-        "            /  researcher @ energy + enviro    \\          ",
-        "           /   gis | spatial analysis | ai      \\         ",
-        "          '---------------------------------------'        "
+# Colors — all inline
+BG       = "#0d1117"
+BG2      = "#111722"
+TITLEBAR = "#161b22"
+BORDER   = "#30363d"
+TEXT     = "#c9d1d9"
+BRIGHT   = "#e6edf3"
+MUTED    = "#7d8590"
+GREEN    = "#39d353"
+CYAN     = "#22d3ee"
+RED      = "#ff5f56"
+YELLOW   = "#ffbd2e"
+BTNGRN   = "#27c93f"
+
+MONO = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+
+
+def generate_placeholder_ascii(cols=62, rows=26):
+    """Stylized ASCII placeholder when source-prepped.png is not available."""
+    art = [
+        "     .----------------------------------------------.     ",
+        "    /   __________________________________________   \\    ",
+        "   |   |                                          |   |   ",
+        "   |   |   ___  ___  ___  ___  _  _  __   ___   |   |   ",
+        "   |   |  | \\/ || __||   || \\/ || |/ / | | \\  \\  |   |   ",
+        "   |   |  | || || |_ | _ ||    || |< <  | |  \\ \\ |   |   ",
+        "   |   |  |_||_||___||___||_/\\_||_|\\_\\ |_|  /_/ |   |   ",
+        "   |   |                                          |   |   ",
+        "   |   |   PhD Candidate @ Univ. of Tennessee    |   |   ",
+        "   |   |   Energy & Environmental Policy         |   |   ",
+        "   |   |   Knoxville, Tennessee                  |   |   ",
+        "   |   |__________________________________________|   |   ",
+        "    \\_________________________________________________/   ",
+        "                         |   |                            ",
+        "                      .----+----.                         ",
+        "                     / RESEARCHER \\                       ",
+        "                    / GIS | POLICY \\                      ",
+        "                   /  DATA | AI | ML \\                    ",
+        "                  '-------------------'                   ",
+        "           .-----------------------------------------.    ",
+        "          / Energy · Conservation · Evidence Policy  \\   ",
+        "         '-------------------------------------------'    ",
+        "                                                           ",
+        "          [ vkenned2 ] [ UTK Knoxville ] [ 2022-2027 ]    ",
+        "                                                           ",
+        "              Source photo not yet processed.             ",
     ]
-
-    # Center lines inside grid
-    for line in avatar_art:
-        pad_left = (cols - len(line)) // 2
-        pad_right = cols - len(line) - pad_left
-        lines.append(" " * max(0, pad_left) + line + " " * max(0, pad_right))
-
+    pad_cols = cols
+    lines = []
+    for line in art:
+        if len(line) < pad_cols:
+            line = line + " " * (pad_cols - len(line))
+        elif len(line) > pad_cols:
+            line = line[:pad_cols]
+        lines.append(line)
     while len(lines) < rows:
-        lines.append(" " * cols)
-
+        lines.append(" " * pad_cols)
     return lines[:rows]
 
-def image_to_ascii(img_path: str, cols=70, rows=42):
+
+def image_to_ascii(img_path: str, cols=68, rows=30):
     if not os.path.exists(img_path):
         return None
-
     try:
         img = Image.open(img_path).convert("L")
     except Exception as e:
         print(f"Error opening prepped photo: {e}", file=sys.stderr)
         return None
 
-    # Aspect ratio adjustment (font chars are ~ 2:1 height to width)
     img_w, img_h = img.size
-    aspect = (img_h / img_w) * 0.55
-    target_h = int(cols * aspect)
-    if target_h > rows:
-        target_h = rows
+    # Monospace chars are ~0.55 as wide as tall → compensate aspect
+    aspect      = (img_h / img_w) * 0.52
+    target_h    = min(rows, int(cols * aspect))
 
     img_resized = img.resize((cols, target_h), Image.Resampling.LANCZOS)
-    pixels = img_resized.getdata()
+    pixels      = list(img_resized.getdata())
+    ramp_len    = len(RAMP)
 
     ascii_lines = []
-    ramp_len = len(RAMP)
-
     for r in range(target_h):
-        line_chars = []
+        row_chars = []
         for c in range(cols):
             val = pixels[r * cols + c]
-            # Map white/near-white (>240) to space
-            if val > 235:
-                char = " "
+            if val > 230:
+                ch = " "
             else:
                 idx = int((255 - val) / 255.0 * (ramp_len - 1))
-                char = RAMP[idx]
-            line_chars.append(char)
-        ascii_lines.append("".join(line_chars))
+                ch = RAMP[max(0, min(idx, ramp_len - 1))]
+            row_chars.append(ch)
+        ascii_lines.append("".join(row_chars))
 
     return ascii_lines
 
-def render_ascii_svg(ascii_lines, output_path: str):
-    width = 370
-    height = 360
 
-    # Determine font size and line height based on grid size
+def render_ascii_svg(ascii_lines: list, output_path: str):
+    W = 370
+    font_size   = 6.8
+    line_height = 8.2
+    x_start     = 14
+    y_start     = 50
+
     num_rows = len(ascii_lines)
-    num_cols = max(len(l) for l in ascii_lines) if ascii_lines else 1
 
-    font_size = 7.2
-    line_height = 8.5
-    y_start = 54
-    x_start = 16
+    # Dynamic height: fit all rows + title bar + status bar
+    content_h = y_start + num_rows * line_height + 4
+    status_h  = 26
+    H = int(content_h + status_h + 8)
+    H = max(H, 320)
 
-    svg_parts = []
-    svg_parts.append(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}">
-  <defs>
-    <linearGradient id="asciiBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0d1117" />
-      <stop offset="100%" stop-color="#111722" />
-    </linearGradient>
-    <filter id="asciiShadow" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5" />
-    </filter>
-  </defs>
+    status_y = H - status_h - 4
 
-  <style>
-    .window {{
-      fill: url(#asciiBg);
-      stroke: #30363d;
-      stroke-width: 1px;
-      rx: 10px;
-      ry: 10px;
-    }}
-    .title-bar {{
-      fill: #161b22;
-      stroke: #30363d;
-      stroke-width: 1px;
-    }}
-    .title-text {{
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 12px;
-      font-weight: 600;
-      fill: #c9d1d9;
-    }}
-    .prompt-user {{ fill: #39d353; }}
-    .prompt-path {{ fill: #22d3ee; }}
-    .ascii-text {{
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: {font_size}px;
-      fill: #39d353;
-      white-space: pre;
-    }}
-    .status-bar {{
-      fill: #161b22;
-      stroke: #30363d;
-      stroke-width: 1px;
-    }}
-    .status-text {{
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-      font-size: 11px;
-      fill: #c9d1d9;
-    }}
-    .cursor {{
-      fill: #39d353;
-      animation: blink 1s step-end infinite;
-    }}
-    .ascii-row {{
-      opacity: 0;
-      animation: revealRow 0.25s ease-out forwards;
-    }}
-    @keyframes revealRow {{
-      0% {{
-        opacity: 0;
-        transform: translateX(-4px);
-      }}
-      100% {{
-        opacity: 1;
-        transform: translateX(0);
-      }}
-    }}
-    @keyframes blink {{
-      0%, 100% {{ opacity: 1; }}
-      50% {{ opacity: 0; }}
-    }}
-    @media (prefers-reduced-motion: reduce) {{
-      .ascii-row {{
-        opacity: 1 !important;
-        animation: none !important;
-      }}
-      .cursor {{
-        animation: none !important;
-        opacity: 1 !important;
-      }}
-    }}
-  </style>
+    out = []
 
-  <!-- Terminal Window -->
-  <rect x="2" y="2" width="{width - 4}" height="{height - 4}" class="window" filter="url(#asciiShadow)" />
+    # ── SVG root ──────────────────────────────────────────────────────────────
+    out.append(f'<svg xmlns="http://www.w3.org/2000/svg" '
+               f'viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
 
-  <!-- Title Bar -->
-  <path d="M 2 12 Q 2 2 12 2 L {width - 12} 2 Q {width - 2} 2 {width - 2} 12 L {width - 2} 34 L 2 34 Z" class="title-bar" />
+    out.append('<defs>')
+    out.append(f'  <linearGradient id="abg" x1="0%" y1="0%" x2="100%" y2="100%">')
+    out.append(f'    <stop offset="0%"   stop-color="{BG}"/>')
+    out.append(f'    <stop offset="100%" stop-color="{BG2}"/>')
+    out.append(f'  </linearGradient>')
+    out.append('</defs>')
 
-  <!-- Window Controls -->
-  <circle cx="18" cy="18" r="5.5" fill="#ff5f56" />
-  <circle cx="36" cy="18" r="5.5" fill="#ffbd2e" />
-  <circle cx="54" cy="18" r="5.5" fill="#27c93f" />
+    # ── Main window ───────────────────────────────────────────────────────────
+    out.append(f'<rect x="0" y="0" width="{W}" height="{H}" rx="10" ry="10" '
+               f'fill="url(#abg)" stroke="{BORDER}" stroke-width="1.5"/>')
 
-  <!-- Window Title -->
-  <text x="74" y="22" class="title-text">
-    <tspan class="prompt-user">vkenned2@github</tspan>:<tspan class="prompt-path">~$</tspan> ./portrait.sh
-  </text>
+    # ── Title bar ─────────────────────────────────────────────────────────────
+    out.append(f'<rect x="0" y="0" width="{W}" height="32" rx="10" ry="10" '
+               f'fill="{TITLEBAR}" stroke="{BORDER}" stroke-width="1"/>')
+    out.append(f'<rect x="0" y="20" width="{W}" height="12" fill="{TITLEBAR}"/>')
+    out.append(f'<line x1="0" y1="32" x2="{W}" y2="32" stroke="{BORDER}" stroke-width="1"/>')
 
-  <!-- ASCII Portrait Content -->''')
+    # Window dots
+    out.append(f'<circle cx="16" cy="16" r="5.5" fill="{RED}"/>')
+    out.append(f'<circle cx="33" cy="16" r="5.5" fill="{YELLOW}"/>')
+    out.append(f'<circle cx="50" cy="16" r="5.5" fill="{BTNGRN}"/>')
 
+    # Title text — inline fills
+    out.append(f'<text y="21" font-family={MONO!r} font-size="11" font-weight="600">')
+    out.append(f'  <tspan x="67" fill="{GREEN}">vkenned2@github</tspan>'
+               f'<tspan fill="{TEXT}">:</tspan>'
+               f'<tspan fill="{CYAN}">~$</tspan>'
+               f'<tspan fill="{TEXT}"> ./portrait.sh</tspan>')
+    out.append('</text>')
+
+    # ── ASCII rows — inline fill, xml:space, SMIL animate ────────────────────
     for idx, line in enumerate(ascii_lines):
-        y_pos = y_start + idx * line_height
-        delay = round(0.05 + idx * 0.02, 3)
-        # Escape HTML entities in ASCII text
-        escaped_line = (
-            line.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace('"', "&quot;")
+        y     = y_start + idx * line_height
+        delay = round(0.04 + idx * 0.018, 3)
+        # Escape XML special chars
+        escaped = (line
+                   .replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;"))
+        out.append(
+            f'<text x="{x_start}" y="{y:.1f}" '
+            f'xml:space="preserve" '
+            f'font-family={MONO!r} '
+            f'font-size="{font_size}" '
+            f'fill="{GREEN}">'
+            f'<animate attributeName="opacity" from="0" to="1" '
+            f'dur="0.22s" begin="{delay}s" fill="freeze"/>'
+            f'{escaped}</text>'
         )
-        svg_parts.append(
-            f'  <text x="{x_start}" y="{y_pos}" class="ascii-text ascii-row" style="animation-delay: {delay}s;">{escaped_line}</text>'
-        )
 
-    # Bottom status bar
-    status_y = height - 28
-    svg_parts.append(f'''
-  <!-- Bottom Status Bar -->
-  <path d="M 2 {status_y} L {width - 2} {status_y} L {width - 2} {height - 12} Q {width - 2} {height - 2} {width - 12} {height - 2} L 12 {height - 2} Q 2 {height - 2} 2 {height - 12} Z" class="status-bar" />
+    # ── Status bar ────────────────────────────────────────────────────────────
+    out.append(f'<rect x="0" y="{status_y}" width="{W}" height="{H - status_y}" '
+               f'rx="0" fill="{TITLEBAR}" stroke="{BORDER}" stroke-width="1"/>')
+    # Round bottom corners
+    out.append(f'<rect x="0" y="{status_y}" width="{W}" height="4" fill="{TITLEBAR}"/>')
+    out.append(f'<rect x="0" y="{H - 10}" width="{W}" height="10" rx="6" fill="{TITLEBAR}"/>')
 
-  <text x="14" y="{status_y + 18}" class="status-text">
-    <tspan class="prompt-user">vkenned2@github</tspan>:<tspan class="prompt-path">~$</tspan> whoami <tspan fill="#e6edf3" font-weight="bold">Vishal Kennedy</tspan>
-  </text>
-  <rect x="272" y="{status_y + 7}" width="7" height="13" class="cursor" />
-</svg>''')
+    prompt_y = status_y + 17
+    out.append(f'<text y="{prompt_y}" font-family={MONO!r} font-size="11" font-weight="600">')
+    out.append(f'  <tspan x="12" fill="{GREEN}">vkenned2@github</tspan>'
+               f'<tspan fill="{TEXT}">:</tspan>'
+               f'<tspan fill="{CYAN}">~$</tspan>'
+               f'<tspan fill="{MUTED}"> whoami </tspan>'
+               f'<tspan fill="{BRIGHT}" font-weight="800">Vishal Kennedy</tspan>')
+    out.append('</text>')
 
+    # Blinking cursor
+    cursor_x = 246
+    out.append(f'<rect x="{cursor_x}" y="{prompt_y - 11}" width="6" height="12" fill="{GREEN}">')
+    out.append('  <animate attributeName="opacity" values="1;0;1" '
+               'dur="1.1s" repeatCount="indefinite"/>')
+    out.append('</rect>')
+
+    out.append('</svg>')
+
+    svg = "\n".join(out)
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(svg_parts))
+        f.write(svg)
+    print(f"Generated ASCII portrait SVG: {output_path} ({len(ascii_lines)} rows, height={H})")
 
-    print(f"Successfully generated ASCII portrait SVG at {output_path}")
 
 def main():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    prepped_photo = os.path.join(base_dir, "source-prepped.png")
-    output_svg = os.path.join(base_dir, "vishal-ascii.svg")
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    prepped = os.path.join(base, "source-prepped.png")
+    output  = os.path.join(base, "vishal-ascii.svg")
 
     if len(sys.argv) > 1:
-        prepped_photo = sys.argv[1]
+        prepped = sys.argv[1]
     if len(sys.argv) > 2:
-        output_svg = sys.argv[2]
+        output  = sys.argv[2]
 
-    ascii_lines = image_to_ascii(prepped_photo, cols=68, rows=32)
+    ascii_lines = image_to_ascii(prepped, cols=68, rows=30)
 
     if not ascii_lines:
-        print(f"Note: {prepped_photo} not found. Generating stylized terminal placeholder ASCII for Vishal Kennedy...")
-        ascii_lines = generate_placeholder_ascii(cols=60, rows=22)
+        print(f"Note: {prepped} not found — generating stylized placeholder...",
+              file=sys.stderr)
+        ascii_lines = generate_placeholder_ascii(cols=62, rows=26)
 
-    render_ascii_svg(ascii_lines, output_svg)
+    render_ascii_svg(ascii_lines, output)
+
 
 if __name__ == "__main__":
     main()
