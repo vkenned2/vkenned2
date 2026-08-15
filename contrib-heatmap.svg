@@ -22,7 +22,7 @@
 </text>
 <rect x="0" y="36" width="860" height="4" fill="url(#hacc)"/>
 <text x="54" y="62" font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" font-size="12">
-  <tspan fill="#f59e0b" font-size="14" font-weight="800">15</tspan><tspan fill="#c0d4e8"> contributions in the last year</tspan><tspan fill="#4a6a8a" font-size="10">   2025-08-10 &#x2192; 2026-08-14</tspan>
+  <tspan fill="#f59e0b" font-size="14" font-weight="800">21</tspan><tspan fill="#c0d4e8"> contributions in the last year</tspan><tspan fill="#4a6a8a" font-size="10">   2025-08-10 &#x2192; 2026-08-15</tspan>
 </text>
 <text x="54" y="76" font-family="'-apple-system', 'BlinkMacSystemFont', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" fill="#4a6a8a">Aug</text>
 <text x="96" y="76" font-family="'-apple-system', 'BlinkMacSystemFont', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" fill="#4a6a8a">Sep</text>
@@ -293,7 +293,7 @@
 <rect x="544" y="152" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-04-17</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.26s" fill="freeze"/></rect>
 <rect x="544" y="166" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-04-18</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.263s" fill="freeze"/></rect>
 <rect x="558" y="82" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-04-19</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.252s" fill="freeze"/></rect>
-<rect x="558" y="96" width="11" height="11" rx="2.5" ry="2.5" fill="#1e7bc4"><title>3 contributions on 2026-04-20</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.255s" fill="freeze"/></rect>
+<rect x="558" y="96" width="11" height="11" rx="2.5" ry="2.5" fill="#0d5799"><title>3 contributions on 2026-04-20</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.255s" fill="freeze"/></rect>
 <rect x="558" y="110" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-04-21</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.258s" fill="freeze"/></rect>
 <rect x="558" y="124" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-04-22</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.261s" fill="freeze"/></rect>
 <rect x="558" y="138" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-04-23</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.264s" fill="freeze"/></rect>
@@ -396,12 +396,12 @@
 <rect x="754" y="124" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-07-29</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.359s" fill="freeze"/></rect>
 <rect x="754" y="138" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-07-30</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.362s" fill="freeze"/></rect>
 <rect x="754" y="152" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-07-31</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.365s" fill="freeze"/></rect>
-<rect x="754" y="166" width="11" height="11" rx="2.5" ry="2.5" fill="#1e7bc4"><title>3 contributions on 2026-08-01</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.368s" fill="freeze"/></rect>
+<rect x="754" y="166" width="11" height="11" rx="2.5" ry="2.5" fill="#0d5799"><title>3 contributions on 2026-08-01</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.368s" fill="freeze"/></rect>
 <rect x="768" y="82" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-02</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.357s" fill="freeze"/></rect>
 <rect x="768" y="96" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-03</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.36s" fill="freeze"/></rect>
 <rect x="768" y="110" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-04</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.363s" fill="freeze"/></rect>
 <rect x="768" y="124" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-05</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.366s" fill="freeze"/></rect>
-<rect x="768" y="138" width="11" height="11" rx="2.5" ry="2.5" fill="#38bdf8"><title>5 contributions on 2026-08-06</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.369s" fill="freeze"/></rect>
+<rect x="768" y="138" width="11" height="11" rx="2.5" ry="2.5" fill="#0d5799"><title>5 contributions on 2026-08-06</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.369s" fill="freeze"/></rect>
 <rect x="768" y="152" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-07</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.372s" fill="freeze"/></rect>
 <rect x="768" y="166" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-08</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.375s" fill="freeze"/></rect>
 <rect x="782" y="82" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-09</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.364s" fill="freeze"/></rect>
@@ -409,10 +409,11 @@
 <rect x="782" y="110" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-11</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.37s" fill="freeze"/></rect>
 <rect x="782" y="124" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-12</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.373s" fill="freeze"/></rect>
 <rect x="782" y="138" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-13</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.376s" fill="freeze"/></rect>
-<rect x="782" y="152" width="11" height="11" rx="2.5" ry="2.5" fill="#38bdf8"><title>4 contributions on 2026-08-14</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.379s" fill="freeze"/></rect>
+<rect x="782" y="152" width="11" height="11" rx="2.5" ry="2.5" fill="#38bdf8"><title>10 contributions on 2026-08-14</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.379s" fill="freeze"/></rect>
+<rect x="782" y="166" width="11" height="11" rx="2.5" ry="2.5" fill="#0a1628"><title>0 contributions on 2026-08-15</title><animate attributeName="opacity" from="0" to="1" dur="0.28s" begin="0.382s" fill="freeze"/></rect>
 <line x1="24" y1="194" x2="836" y2="194" stroke="#1a3452" stroke-width="1" stroke-dasharray="4,3"/>
 <text x="54" y="206" font-family="'-apple-system', 'BlinkMacSystemFont', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" fill="#4a6a8a">
-current streak  <tspan font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" fill="#38bdf8" font-weight="700">1 days</tspan><tspan fill="#243f60">   |   </tspan>longest  <tspan font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" fill="#c0d4e8" font-weight="700">1 days</tspan><tspan fill="#243f60">   |   </tspan>best day  <tspan font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" fill="#c0d4e8" font-weight="700">5 on 2026-08-06</tspan>
+current streak  <tspan font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" fill="#38bdf8" font-weight="700">1 days</tspan><tspan fill="#243f60">   |   </tspan>longest  <tspan font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" fill="#c0d4e8" font-weight="700">1 days</tspan><tspan fill="#243f60">   |   </tspan>best day  <tspan font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace" fill="#c0d4e8" font-weight="700">10 on 2026-08-14</tspan>
 </text>
 <text x="660" y="204" font-family="'-apple-system', 'BlinkMacSystemFont', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" fill="#4a6a8a">Less</text>
 <rect x="693" y="195" width="10" height="10" rx="2" fill="#0a1628" stroke="#1a3452" stroke-width="0.5"/>
