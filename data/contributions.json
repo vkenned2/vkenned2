@@ -1,9 +1,9 @@
 {
   "username": "vkenned2",
-  "generated_at": "2026-09-05T10:51:17.644451Z",
+  "generated_at": "2026-09-06T11:15:52.728477Z",
   "range": {
-    "start": "2025-08-31",
-    "end": "2026-09-05"
+    "start": "2025-09-07",
+    "end": "2026-09-06"
   },
   "total_contributions": 31,
   "active_days": 7,
@@ -23,10 +23,6 @@
     "count": 10
   },
   "monthly": [
-    {
-      "month": "2025-08",
-      "count": 0
-    },
     {
       "month": "2025-09",
       "count": 0
@@ -81,41 +77,6 @@
     }
   ],
   "days": [
-    {
-      "date": "2025-08-31",
-      "count": 0,
-      "level": 0
-    },
-    {
-      "date": "2025-09-01",
-      "count": 0,
-      "level": 0
-    },
-    {
-      "date": "2025-09-02",
-      "count": 0,
-      "level": 0
-    },
-    {
-      "date": "2025-09-03",
-      "count": 0,
-      "level": 0
-    },
-    {
-      "date": "2025-09-04",
-      "count": 0,
-      "level": 0
-    },
-    {
-      "date": "2025-09-05",
-      "count": 0,
-      "level": 0
-    },
-    {
-      "date": "2025-09-06",
-      "count": 0,
-      "level": 0
-    },
     {
       "date": "2025-09-07",
       "count": 0,
@@ -1935,6 +1896,11 @@
       "date": "2026-09-05",
       "count": 2,
       "level": 1
+    },
+    {
+      "date": "2026-09-06",
+      "count": 0,
+      "level": 0
     }
   ]
 }
